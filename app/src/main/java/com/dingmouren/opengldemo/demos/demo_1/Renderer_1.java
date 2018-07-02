@@ -10,6 +10,7 @@ import android.util.Log;
 import com.dingmouren.opengldemo.common.CameraManagor;
 
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -30,18 +31,17 @@ import static android.opengl.GLES20.glVertexAttribPointer;
 import static javax.microedition.khronos.opengles.GL11.GL_FLOAT;
 
 /**
- * Created by GHC on 2017/6/12.
- *
+ * 渲染器
  */
 
 public class Renderer_1 implements GLSurfaceView.Renderer {
 
     private static final String TAG = "Renderer_1";
+    private GLSurfaceView_1 mGLSurfaceView;
+    private CameraManagor mCameraManagor;
     private int mOESTextureId = -1;//创建的新的纹理
     private SurfaceTexture mSurfaceTexture;
     private float[] transformMatrix = new float[16];
-    private GLSurfaceView_1 mGLSurfaceView;
-    private CameraManagor mCameraManagor;
     private boolean bIsPreviewStarted;
     private RenderEngine_1 mRenderEngine1;
     private FloatBuffer mDataBuffer;
@@ -50,6 +50,7 @@ public class Renderer_1 implements GLSurfaceView.Renderer {
     private int aTextureCoordLocation = -1;
     private int uTextureMatrixLocation = -1;
     private int uTextureSamplerLocation = -1;
+    private int mWidth, mHeight;
     private int mCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
 
     public void init(GLSurfaceView_1 glSurfaceView, CameraManagor cameraManagor, boolean isPreviewStarted) {
@@ -69,7 +70,7 @@ public class Renderer_1 implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         mCameraManagor.openCamera(mCameraId);
-         /*获取一个纹理句柄*/
+         /*获取一个纹理句柄，注释点仍然可以预览*/
         mOESTextureId = createOESTextureObject();
         Log.d(TAG, "mOESTextureId:" + mOESTextureId);
          /*初始化渲染器*/
@@ -82,30 +83,30 @@ public class Renderer_1 implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        Log.d(TAG, "screen size width: " + width + " ; height: " + height);
+        Log.e(TAG, "Surface尺寸: " + width + " ; height: " + height);
+        this.mWidth = width;
+        this.mHeight = height;
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        /*启用剪裁测试*/
-        gl.glEnable(GL10.GL_SCISSOR_TEST);
-         /*设置显示区域，坐标系以左下角作为坐标原点，参数1和参数2为x y坐标，后两个参数是显示区域的宽高*/
-        gl.glScissor(0, 0, 1080,2340);
+        /*启用剪裁测试，注释掉仍然可以预览*/
+        GLES20.glEnable(GL10.GL_SCISSOR_TEST);
+         /*设置显示区域，坐标系以左下角作为坐标原点，参数1和参数2为x y坐标，后两个参数是显示区域的宽高,在完整的摄像头视图上裁剪显示部分区域*/
+        GLES20.glScissor(0, 0, mWidth, mHeight);
 
-        Long t1 = System.currentTimeMillis();
         if (mSurfaceTexture != null) {
              /*SurfaceTexture对象所关联的OpenGLES中纹理对象的内容将被更新为Image Stream中最新的图片。*/
             mSurfaceTexture.updateTexImage();
-            /*调用getTransformMatrix()来转换纹理坐标,每次texture image被更新时，getTransformMatrix ()也应该被调用。*/
+            /*调用getTransformMatrix()来转换纹理坐标,每次texture image被更新时，getTransformMatrix ()也应该被调用。transformMatrix里面的值是在这里被赋值的*/
             mSurfaceTexture.getTransformMatrix(transformMatrix);
         }
-
+        /*未开启预览时调用*/
         if (!bIsPreviewStarted) {
             bIsPreviewStarted = initSurfaceTexture();
-            bIsPreviewStarted = true;
             return;
         }
-         /*设置窗口颜色*/
+         /*设置窗口颜色，注释掉仍然可以预览*/
         glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
         /*获取顶点着色器的位置的句柄，glsl中只用顶点着色器才能使用attribute，用来表示顶点数据*/
         aPositionLocation = glGetAttribLocation(mShaderProgram, RenderEngine_1.POSITION_ATTRIBUTE);
@@ -113,11 +114,11 @@ public class Renderer_1 implements GLSurfaceView.Renderer {
         /*获取vertex和fragment共享使用的属性句柄*/
         uTextureMatrixLocation = glGetUniformLocation(mShaderProgram, RenderEngine_1.TEXTURE_MATRIX_UNIFORM);
         uTextureSamplerLocation = glGetUniformLocation(mShaderProgram, RenderEngine_1.TEXTURE_SAMPLER_UNIFORM);
-         /*激活GL_TEXTURE0，该纹理单元默认激活*/
+         /*激活GL_TEXTURE0，该纹理单元默认激活，，注释掉仍然可以预览*/
         glActiveTexture(GLES20.GL_TEXTURE0);
-        /*将自己创建的纹理绑定在扩展纹理上*/
+        /*将自己创建的纹理绑定在扩展纹理上,注释掉仍然可以预览*/
         glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mOESTextureId);
-        /*设置纹理采样器，这个对应纹理第一层*/
+        /*设置纹理采样器，这个对应纹理第一层,注释掉仍然可以预览*/
         glUniform1i(uTextureSamplerLocation, 0);
         /*向shader中传递矩阵，参数分别为：下标位置，矩阵数量，是否进行转置，矩阵*/
         glUniformMatrix4fv(uTextureMatrixLocation, 1, false, transformMatrix, 0);
@@ -139,12 +140,8 @@ public class Renderer_1 implements GLSurfaceView.Renderer {
         }
          /*绘制三角形*/
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        /*解绑FrameBuffer*/
+        /*解绑FrameBuffer，注释掉仍然可以预览*/
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        long t2 = System.currentTimeMillis();
-        long t = t2 - t1;
-//        Log.i(TAG, "onDrawFrame: time: " + t);
-
     }
 
     public boolean initSurfaceTexture() {
@@ -152,18 +149,27 @@ public class Renderer_1 implements GLSurfaceView.Renderer {
             Log.i(TAG, "mCamera or mGLSurfaceView is null!");
             return false;
         }
-        mSurfaceTexture = new SurfaceTexture(mOESTextureId);
-        /* 当数据帧有效时，即onFrameAvailable被调用时，可调用GLSurfaceView.requestRender()，来显示要求进行渲染，即触发Renderer的onDrawFrame()*/
-        mSurfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
-            @Override
-            public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-                mGLSurfaceView.requestRender();
-            }
-        });
-         /*将SurfaceTexture与Camera绑定*/
-        mCameraManagor.setPreviewTexture(mSurfaceTexture);
-        mCameraManagor.startPreview();
-        return true;
+        try {
+            Log.e(TAG,"initSurfaceTexture--mOESTextureId:"+mOESTextureId);
+            mSurfaceTexture = new SurfaceTexture(mOESTextureId);
+            /* 当数据帧有效时，即onFrameAvailable被调用时，可调用GLSurfaceView.requestRender()，来显示要求进行渲染，即触发Renderer的onDrawFrame()，但是注释掉仍然是可以预览的*/
+            mSurfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
+                @Override
+                public void onFrameAvailable(SurfaceTexture surfaceTexture) {
+                    mGLSurfaceView.requestRender();
+                }
+            });
+            /*将SurfaceTexture与Camera绑定*/
+            mCameraManagor.setPreviewTexture(mSurfaceTexture);
+            /*摄像头开始预览*/
+            mCameraManagor.startPreview();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(TAG,"initSurfaceTexture失败："+e.getMessage());
+            return false;
+        }
+
     }
 
     public void deinit() {

@@ -19,7 +19,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".demos.demo_1.Demo1Activity"></activity>
+        <activity android:name=".demos.demo_1.Demo1Activity"
+            android:theme="@style/AppTheme.StatusTranslate"
+            ></activity>
     </application>
 
 </manifest>

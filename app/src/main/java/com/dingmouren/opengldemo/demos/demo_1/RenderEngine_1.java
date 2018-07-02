@@ -16,7 +16,7 @@ import static android.opengl.GLES20.glShaderSource;
 import static android.opengl.GLES20.glUseProgram;
 
 /**
- * Created by GHC on 2017/6/12.
+ *
  */
 
 public class RenderEngine_1 {
@@ -24,18 +24,7 @@ public class RenderEngine_1 {
     private FloatBuffer mBuffer;
     private int vertexShader = -1;
     private int fragmentShader = -1;
-
     private int mShaderProgram = -1;
-
-    public RenderEngine_1() {
-        /*创建缓冲区*/
-        mBuffer = createBuffer(vertexData);
-        /*创建顶点着色器*/
-        vertexShader = loadShader(GL_VERTEX_SHADER, VERTEX_SHADER);
-        /*创建片段着色器*/
-        fragmentShader = loadShader(GL_FRAGMENT_SHADER, FRAGMENT_SHADER);
-        mShaderProgram = linkProgram(vertexShader, fragmentShader);
-    }
 
     private static final float[] vertexData = {
             1f, 1f, 1f, 1f,
@@ -51,6 +40,7 @@ public class RenderEngine_1 {
     public static final String TEXTURE_MATRIX_UNIFORM = "uTextureMatrix";
     public static final String TEXTURE_SAMPLER_UNIFORM = "uTextureSampler";
 
+    /*顶点着色器代码*/
     private static final String VERTEX_SHADER = "" +
             "attribute vec4 " + POSITION_ATTRIBUTE + ";\n" +
             "uniform mat4 " + TEXTURE_MATRIX_UNIFORM + ";\n" +
@@ -62,6 +52,7 @@ public class RenderEngine_1 {
             "  gl_Position = " + POSITION_ATTRIBUTE + ";\n" +
             "}\n";
 
+    /*片段着色器代码*/
     private static final String FRAGMENT_SHADER = "" +
             "#extension GL_OES_EGL_image_external : require\n" +
             "precision mediump float;\n" +
@@ -71,6 +62,19 @@ public class RenderEngine_1 {
             "{\n" +
             "gl_FragColor = texture2D(" + TEXTURE_SAMPLER_UNIFORM + ", vTextureCoord);\n" +
             "}\n";
+
+    public RenderEngine_1() {
+        /*创建缓冲区*/
+        mBuffer = createBuffer(vertexData);
+        /*创建顶点着色器*/
+        vertexShader = loadShader(GL_VERTEX_SHADER, VERTEX_SHADER);
+        /*创建片段着色器*/
+        fragmentShader = loadShader(GL_FRAGMENT_SHADER, FRAGMENT_SHADER);
+        /*链接程序*/
+        mShaderProgram = linkProgram(vertexShader, fragmentShader);
+    }
+
+
 
     /**
      * 将float[]数组转为OpenGl 所需要的FloatBuffer 创建缓冲区  讲解  https://www.cnblogs.com/ruber/p/6857159.html
@@ -128,7 +132,7 @@ public class RenderEngine_1 {
         glAttachShader(program, fragShader);
         /*创建OpenGL ES程序的可执行文件*/
         glLinkProgram(program);
-
+        /*应用这个program*/
         glUseProgram(program);
         return program;
     }

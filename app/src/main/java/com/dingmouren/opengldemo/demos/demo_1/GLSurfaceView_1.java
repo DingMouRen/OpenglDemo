@@ -29,11 +29,13 @@ public class GLSurfaceView_1 extends GLSurfaceView {
         init(context,false);
     }
 
+
+
+
     public void init(Context context, boolean isPreviewStarted) {
         WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        int width = windowManager.getDefaultDisplay().getWidth();
         mCameraManagor = new CameraManagor(windowManager);
-        // 设置使用的OpenGL ES的版本，一般都是设置为2
+        /*设置使用的OpenGL ES的版本，一般都是设置为2*/
         setEGLContextClientVersion(2);
         /*创建渲染器对象*/
         mRenderer = new Renderer_1();
