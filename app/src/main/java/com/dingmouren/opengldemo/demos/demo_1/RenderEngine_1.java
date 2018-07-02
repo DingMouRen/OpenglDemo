@@ -19,7 +19,7 @@ import static android.opengl.GLES20.glUseProgram;
  * Created by GHC on 2017/6/12.
  */
 
-public class RenderEngine {
+public class RenderEngine_1 {
 
     private FloatBuffer mBuffer;
     private int vertexShader = -1;
@@ -27,7 +27,7 @@ public class RenderEngine {
 
     private int mShaderProgram = -1;
 
-    public RenderEngine() {
+    public RenderEngine_1() {
         /*创建缓冲区*/
         mBuffer = createBuffer(vertexData);
         /*创建顶点着色器*/

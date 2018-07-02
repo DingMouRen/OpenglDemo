@@ -1,10 +1,13 @@
 package com.dingmouren.opengldemo.demos.demo_1;
 
 import android.graphics.SurfaceTexture;
+import android.hardware.Camera;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
+
+import com.dingmouren.opengldemo.common.CameraManagor;
 
 import java.nio.FloatBuffer;
 
@@ -28,28 +31,30 @@ import static javax.microedition.khronos.opengles.GL11.GL_FLOAT;
 
 /**
  * Created by GHC on 2017/6/12.
+ *
  */
 
-public class SquareRenderer implements GLSurfaceView.Renderer {
+public class Renderer_1 implements GLSurfaceView.Renderer {
 
-    private static final String TAG = "SquareRenderer";
-    private int mOESTextureId = -1;
+    private static final String TAG = "Renderer_1";
+    private int mOESTextureId = -1;//创建的新的纹理
     private SurfaceTexture mSurfaceTexture;
     private float[] transformMatrix = new float[16];
-    private SquareGLSurfaceView mGLSurfaceView;
-    private SquareCameraManager mCamera;
+    private GLSurfaceView_1 mGLSurfaceView;
+    private CameraManagor mCameraManagor;
     private boolean bIsPreviewStarted;
-    private RenderEngine mRenderEngine;
+    private RenderEngine_1 mRenderEngine1;
     private FloatBuffer mDataBuffer;
     private int mShaderProgram = -1;
     private int aPositionLocation = -1;
     private int aTextureCoordLocation = -1;
     private int uTextureMatrixLocation = -1;
     private int uTextureSamplerLocation = -1;
+    private int mCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
 
-    public void init(SquareGLSurfaceView glSurfaceView, SquareCameraManager camera, boolean isPreviewStarted) {
+    public void init(GLSurfaceView_1 glSurfaceView, CameraManagor cameraManagor, boolean isPreviewStarted) {
         mGLSurfaceView = glSurfaceView;
-        mCamera = camera;
+        mCameraManagor = cameraManagor;
         bIsPreviewStarted = isPreviewStarted;
 
     }
@@ -63,15 +68,16 @@ public class SquareRenderer implements GLSurfaceView.Renderer {
     * */
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        mCameraManagor.openCamera(mCameraId);
          /*获取一个纹理句柄*/
         mOESTextureId = createOESTextureObject();
         Log.d(TAG, "mOESTextureId:" + mOESTextureId);
          /*初始化渲染器*/
-        mRenderEngine = new RenderEngine();
+        mRenderEngine1 = new RenderEngine_1();
          /*获取缓冲区*/
-        mDataBuffer = mRenderEngine.getBuffer();
+        mDataBuffer = mRenderEngine1.getBuffer();
          /*获取OpenGL ES程序对象*/
-        mShaderProgram = mRenderEngine.getShaderProgram();
+        mShaderProgram = mRenderEngine1.getShaderProgram();
     }
 
     @Override
@@ -102,11 +108,11 @@ public class SquareRenderer implements GLSurfaceView.Renderer {
          /*设置窗口颜色*/
         glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
         /*获取顶点着色器的位置的句柄，glsl中只用顶点着色器才能使用attribute，用来表示顶点数据*/
-        aPositionLocation = glGetAttribLocation(mShaderProgram, RenderEngine.POSITION_ATTRIBUTE);
-        aTextureCoordLocation = glGetAttribLocation(mShaderProgram, RenderEngine.TEXTURE_COORD_ATTRIBUTE);
+        aPositionLocation = glGetAttribLocation(mShaderProgram, RenderEngine_1.POSITION_ATTRIBUTE);
+        aTextureCoordLocation = glGetAttribLocation(mShaderProgram, RenderEngine_1.TEXTURE_COORD_ATTRIBUTE);
         /*获取vertex和fragment共享使用的属性句柄*/
-        uTextureMatrixLocation = glGetUniformLocation(mShaderProgram, RenderEngine.TEXTURE_MATRIX_UNIFORM);
-        uTextureSamplerLocation = glGetUniformLocation(mShaderProgram, RenderEngine.TEXTURE_SAMPLER_UNIFORM);
+        uTextureMatrixLocation = glGetUniformLocation(mShaderProgram, RenderEngine_1.TEXTURE_MATRIX_UNIFORM);
+        uTextureSamplerLocation = glGetUniformLocation(mShaderProgram, RenderEngine_1.TEXTURE_SAMPLER_UNIFORM);
          /*激活GL_TEXTURE0，该纹理单元默认激活*/
         glActiveTexture(GLES20.GL_TEXTURE0);
         /*将自己创建的纹理绑定在扩展纹理上*/
@@ -137,12 +143,12 @@ public class SquareRenderer implements GLSurfaceView.Renderer {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         long t2 = System.currentTimeMillis();
         long t = t2 - t1;
-        Log.i(TAG, "onDrawFrame: time: " + t);
+//        Log.i(TAG, "onDrawFrame: time: " + t);
 
     }
 
     public boolean initSurfaceTexture() {
-        if (mCamera == null || mGLSurfaceView == null) {
+        if (mCameraManagor == null || mGLSurfaceView == null) {
             Log.i(TAG, "mCamera or mGLSurfaceView is null!");
             return false;
         }
@@ -155,21 +161,21 @@ public class SquareRenderer implements GLSurfaceView.Renderer {
             }
         });
          /*将SurfaceTexture与Camera绑定*/
-        mCamera.setPreviewTexture(mSurfaceTexture);
-        mCamera.startPreview();
+        mCameraManagor.setPreviewTexture(mSurfaceTexture);
+        mCameraManagor.startPreview();
         return true;
     }
 
     public void deinit() {
-        if (mRenderEngine != null) {
-            mRenderEngine = null;
+        if (mRenderEngine1 != null) {
+            mRenderEngine1 = null;
         }
         mDataBuffer = null;
         if (mSurfaceTexture != null) {
             mSurfaceTexture.release();
             mSurfaceTexture = null;
         }
-        mCamera = null;
+        mCameraManagor = null;
         mOESTextureId = -1;
         bIsPreviewStarted = false;
     }

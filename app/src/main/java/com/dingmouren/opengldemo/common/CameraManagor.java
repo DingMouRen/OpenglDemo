@@ -1,17 +1,18 @@
-package com.dingmouren.opengldemo.demos.demo_1;
+package com.dingmouren.opengldemo.common;
 
 import android.app.Activity;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.Surface;
+import android.view.WindowManager;
+
+import com.dingmouren.opengldemo.demos.demo_1.Constant;
 
 import java.io.IOException;
 
 /**
- * Created by GHC on 2017/6/27.
- * <p>
- * CameraManager类
+ * 相机管理
  * 主要实现：
  * openCamera() 打开摄像头
  * startPreview() 开启预览
@@ -20,13 +21,13 @@ import java.io.IOException;
  * releaseCamera() 释放摄像头
  */
 
-public class SquareCameraManager {
-    private Activity mActivity;
+public class CameraManagor {
     private int mCameraId;
     private Camera mCamera;
+    private WindowManager mWindowManager;
 
-    public SquareCameraManager(Activity activity) {
-        mActivity = activity;
+    public CameraManagor(WindowManager windowManager) {
+        this.mWindowManager = windowManager;
     }
 
     // 打开Camera，传入的是前后置摄像头参数
@@ -42,7 +43,7 @@ public class SquareCameraManager {
             // 设置原生Camera的预览分辨率，例如 1280*720
             parameters.setPreviewSize(Constant.SYSTEM_PREVIEW_WIDTH, Constant.SYSTEM_PREVIEW_HEIGHT);
             // 设置Camera角度，根据当前屏幕的角度设置
-            setCameraDisplayOrientation(mActivity, mCameraId, mCamera);
+            setCameraDisplayOrientation(mWindowManager, mCameraId, mCamera);
             mCamera.setParameters(parameters);
             Log.i("GHC", "open camera");
         } catch (Exception e) {
@@ -52,7 +53,7 @@ public class SquareCameraManager {
         return true;
     }
 
-    public static void setCameraDisplayOrientation(Activity activity,
+    public static void setCameraDisplayOrientation(WindowManager windowManager,
                                                    int cameraId, Camera camera) {
         /*创建摄像头信息存储对象，前后摄像头 facing orientation等*/
         Camera.CameraInfo info =
@@ -60,8 +61,7 @@ public class SquareCameraManager {
         /*获取摄像头信息*/
         Camera.getCameraInfo(cameraId, info);
          /*获取屏幕旋转方向*/
-        int rotation = activity.getWindowManager().getDefaultDisplay()
-                .getRotation();
+        int rotation = windowManager.getDefaultDisplay().getRotation();
         int degrees = 0;
         switch (rotation) {
             case Surface.ROTATION_0:
